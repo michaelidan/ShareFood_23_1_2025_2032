@@ -7,19 +7,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class HomePageActivity extends AppCompatActivity {
 
-    private Button shareFoodButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
 
-        // Initialize the button to share food
-        shareFoodButton = findViewById(R.id.shareFoodButton);
-
-        // Navigate to ShareYourFoodActivity when the Share Food button is clicked
+        // כפתור Share Food
+        Button shareFoodButton = findViewById(R.id.shareFoodButton);
         shareFoodButton.setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, ShareYourFoodActivity.class);
+            startActivity(intent);
+        });
+
+        // כפתור Personal Area
+        Button personalAreaButton = findViewById(R.id.personalAreaButton);
+        personalAreaButton.setOnClickListener(v -> {
+            Intent intent = new Intent(HomePageActivity.this, PersonalAreaActivity.class);
             startActivity(intent);
         });
     }
