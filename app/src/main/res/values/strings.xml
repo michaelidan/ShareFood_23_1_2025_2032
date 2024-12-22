@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">SharedFood</string>
     <string name="default_web_client_id">315482238302-si9u33mg9f96bmn1vprtnkruiats40gl.apps.googleusercontent.com</string>
+    <string name="facebook_app_id">1093000132560754</string>
+    <string name="fb_login_protocol_scheme">fb1093000132560754</string>
+    <string name="facebook_client_token">40a1d5d11693a006ac19ab1859e211bc</string>
+    <string name="title_activity_facebook">FacebookActivity</string>
 </resources>
