@@ -12,18 +12,23 @@ public class HomePageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
 
-        // כפתור Share Food
-        Button shareFoodButton = findViewById(R.id.shareFoodButton);
-        shareFoodButton.setOnClickListener(v -> {
+        // Navigate to ShareYourFoodActivity when the Share Food button is clicked
+        findViewById(R.id.shareFoodButton).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, ShareYourFoodActivity.class);
             startActivity(intent);
         });
 
+        // Navigate to ContactUsActivity when the Contact Us button is clicked
+        findViewById(R.id.contactUsButton).setOnClickListener(v -> {
+            Intent intent = new Intent(HomePageActivity.this, activity_contact_us.class);
+            startActivity(intent);
+        });
+
         // כפתור Personal Area
-        Button personalAreaButton = findViewById(R.id.personalAreaButton);
-        personalAreaButton.setOnClickListener(v -> {
+        findViewById(R.id.personalAreaButton).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, PersonalAreaActivity.class);
             startActivity(intent);
         });
+
     }
 }
