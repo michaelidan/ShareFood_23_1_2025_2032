@@ -5,6 +5,8 @@
     <string name="fb_login_protocol_scheme">fb1093000132560754</string>
     <string name="facebook_client_token">40a1d5d11693a006ac19ab1859e211bc</string>
     <string name="title_activity_facebook">FacebookActivity</string>
+
+
     <string name="terms_and_conditions">
         <![CDATA[
         <b>1. מבוא</b><br/>
@@ -64,4 +66,16 @@
         אנו מודים לכם על השימוש באפליקציית FoodShare ומאחלים חוויית שימוש מהנה ובטוחה!
         ]]>
     </string>
+
+    <string name="contact_us">צור קשר</string>
+    <string name="shira_yogev">שירה יוגב (ראש הצוות)</string>
+    <string name="shira_email"> shirayogev8@gmail.com</string>
+    <string name="michael_idan">מיכאל עידן</string>
+    <string name="michael_email"> michael9090124@gmail.com</string>
+    <string name="shirel_cohen">שיראל כהן</string>
+    <string name="shirel_email"> Shirel.Cohen7@msmail.ariel.ac.il</string>
+    <string name="daniel_bas">דניאל בספלוב</string>
+    <string name="daniel_email"> danieldaniel2468@gmail.com</string>
+    <string name="mail_label">מייל:</string>
+
 </resources>
