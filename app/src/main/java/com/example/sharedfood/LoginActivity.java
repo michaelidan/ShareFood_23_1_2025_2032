@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null && user.getEmail() != null) {
                                 // בדיקת אם האימייל שייך לאדמין
-                                if (user.getEmail().trim().equalsIgnoreCase("daniel@gmail.com")) {
+                                if (user.getEmail().trim().equalsIgnoreCase("daniell@gmail.com")) {
                                     Intent intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
                                     startActivity(intent);
                                     finish();
