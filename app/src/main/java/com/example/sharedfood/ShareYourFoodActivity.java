@@ -7,18 +7,26 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -26,7 +34,13 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 public class ShareYourFoodActivity extends AppCompatActivity {
 
@@ -36,72 +50,121 @@ public class ShareYourFoodActivity extends AppCompatActivity {
     private static final int GALLERY_REQUEST_CODE = 200;
 
     private EditText foodDescriptionEditText;
-    private Button shareFoodButton, selectImageButton;
+    private Button uploadPostButton , selectImageButton;
     private FirebaseFirestore db;
     private FirebaseStorage storage;
-    private StorageReference storageReference;
-    private Uri imageUri;
+    private StorageReference storageRef;
+   private Uri imageUri;
     private ImageView imageView;
-    private Uri photoURI;
 
-    // Food properties
-    private boolean isKosher, isHot, isCold, isClosed, isDairy, isMeat;
+    List<String> selectedFilters = new ArrayList<>();
+    Post post;
+    String imageUrl;
+
+    CheckBox kosherCheckBox, hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
+
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    imageUri = result.getData().getData();
+                    if (imageUri != null) {
+                        if (post == null) post = new Post();
+                        post.setImageUri(imageUri);
+                        imageView.setImageURI(imageUri);
+                    }
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (post == null) post = new Post();
+                    // אם יש לך URI מוגדר מראש למצלמה
+                    if (imageUri != null) {
+                        post.setImageUri(imageUri);
+                        imageView.setImageURI(imageUri);
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_your_food);
 
+        kosherCheckBox = findViewById(R.id.kosherCheckBox);
+        hotCheckBox = findViewById(R.id.hotCheckBox);
+        coldCheckBox = findViewById(R.id.coldCheckBox);
+        closedCheckBox = findViewById(R.id.closedCheckBox);
+        dairyCheckBox = findViewById(R.id.dairyCheckBox);
+        meatCheckBox = findViewById(R.id.meatCheckBox);
+
         // Initialize views
-        initializeViews();
-
-        // Initialize Firebase services
-        initializeFirebase();
-
-        // Set up button click listeners
-        setupButtonListeners();
-    }
-
-    private void initializeViews() {
         foodDescriptionEditText = findViewById(R.id.foodDescriptionEditText);
-        shareFoodButton = findViewById(R.id.shareFoodButton);
+        uploadPostButton  = findViewById(R.id.uploadPostButton );
         selectImageButton = findViewById(R.id.selectImageButton);
         imageView = findViewById(R.id.imageView);
-    }
 
-    private void initializeFirebase() {
+        // Initialize Firebase services
+        //FirebaseApp.initializeApp(ShareYourFoodActivity.this);
+
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
-    }
+        storageRef = storage.getReference();
 
-    private void setupButtonListeners() {
-        // Select Image button listener
+        // Set up button click listeners
         selectImageButton.setOnClickListener(v -> showImageSourceDialog());
 
+       /*
+        selectImageButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            activityResultLauncher.launch(intent);
+        });
+        */
+
         // Share Food button listener
-        shareFoodButton.setOnClickListener(v -> {
+        uploadPostButton.setOnClickListener(v -> {
             String foodDescription = foodDescriptionEditText.getText().toString().trim();
 
-            if (!foodDescription.isEmpty()) {
-                // Create food post object
-                FoodPost foodPost = new FoodPost(
-                        foodDescription,
-                        isKosher, isHot, isCold,
-                        isClosed, isDairy, isMeat,
-                        null
-                );
-
-                // Upload image if exists
-                if (imageUri != null) {
-                    uploadImageToFirebase(foodPost);
-                } else {
-                    saveFoodPost(foodPost, null);
-                }
-            } else {
+            if (foodDescription.isEmpty()) {
                 Toast.makeText(this, "Please enter a description", Toast.LENGTH_SHORT).show();
+                return;
             }
+            else{
+                post.setDescription(foodDescription);
+                post.setImageUri(imageUri);
+                updateSelectedFilters();
+            }
+         uploadPost();
         });
+    }
+
+    private void updateSelectedFilters() {
+        if(post.getFilters()!=null) {
+
+            post.getFilters().clear();  // מנקה את הרשימה קודם כל
+        }
+        if (meatCheckBox.isChecked()) selectedFilters.add("Meat");
+        if (dairyCheckBox.isChecked()) selectedFilters.add("Dairy");
+        if (hotCheckBox.isChecked()) selectedFilters.add("Hot");
+        if (coldCheckBox.isChecked()) selectedFilters.add("Cold");
+        if (kosherCheckBox.isChecked()) selectedFilters.add("Kosher");
+        post.setFilters(selectedFilters);
+    }
+
+    private boolean isValidImageUri(Uri uri) {
+        if (uri == null) return false;
+        try {
+            getContentResolver().openInputStream(uri).close();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private void showImageSourceDialog() {
@@ -144,31 +207,34 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = createImageFile();
             if (photoFile != null) {
-                photoURI = FileProvider.getUriForFile(this,
-                        "com.example.sharedfood.fileprovider",
-                        photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
+                imageUri = Uri.fromFile(photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                try {
+                    cameraLauncher.launch(takePictureIntent);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Error opening camera", Toast.LENGTH_SHORT).show();
+                }
             }
+        } else {
+            Toast.makeText(this, "No camera app available", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void openGallery() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, GALLERY_REQUEST_CODE);
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryLauncher.launch(galleryIntent);
     }
 
     private File createImageFile() {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        try {
-            return File.createTempFile(imageFileName, ".jpg", storageDir);
-        } catch (IOException e) {
-            return null;
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String imageFileName = "JPEG_" + timeStamp + "_";
+            File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            try {
+                return File.createTempFile(imageFileName, ".jpg", storageDir);
+            } catch (IOException e) {
+                return null;
+            }
         }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -190,61 +256,70 @@ public class ShareYourFoodActivity extends AppCompatActivity {
             }
         }
     }
-
+/*
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            if (requestCode == CAMERA_REQUEST_CODE) {
-                imageUri = photoURI;
-                imageView.setImageURI(imageUri);
-            } else if (requestCode == GALLERY_REQUEST_CODE) {
-                imageUri = data.getData();
-                imageView.setImageURI(imageUri);
+            if (requestCode == CAMERA_REQUEST_CODE && data != null && data.getData() != null) {
+                post.setImageUri(data.getData());
+            } else if (requestCode == GALLERY_REQUEST_CODE && data != null && data.getData() != null) {
+                post.setImageUri(data.getData());
+            }
+            if (post.getImageUri() != null) {
+                try {
+                    imageView.setImageURI(post.getImageUri());
+                } catch (Exception e) {
+                }
             }
         }
     }
+ */
 
-    private void uploadImageToFirebase(FoodPost foodPost) {
-        if (imageUri != null) {
-            StorageReference imageRef = storageReference.child("foodImages/" +
-                    System.currentTimeMillis() + ".jpg");
-
-            imageRef.putFile(imageUri)
-                    .addOnSuccessListener(taskSnapshot -> {
-                        imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                            String imageUrl = uri.toString();
-                            saveFoodPost(foodPost, imageUrl);
-                        });
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-                    });
-        } else {
-            saveFoodPost(foodPost, null);
+    private void uploadPost() {
+        if (post == null || post.getImageUri() == null) {
+            Toast.makeText(this, "Please select an image first", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        storageRef = FirebaseStorage.getInstance().getReference().child("foodImages/" + UUID.randomUUID().toString() + ".jpg");
+        storageRef.putFile(post.getImageUri()).addOnSuccessListener(taskSnapshot -> {
+            Log.d("Firebase", "Upload successful");
+            storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                Log.d("Firebase", "Download URL received: " + uri);
+                post.setImageUrl(uri.toString());
+                savePostToFirestore();
+            }).addOnFailureListener(e -> {
+                Log.e("Firebase", "Failed to get download URL", e);
+            });
+        }).addOnFailureListener(e -> {
+            Log.e("Firebase", "Image upload failed", e);
+        });
+        savePostToFirestore();
     }
 
-    private void saveFoodPost(FoodPost foodPost, String imageUrl) {
-        if (imageUrl != null) {
-            foodPost = new FoodPost(
-                    foodPost.getFoodDescription(),
-                    foodPost.isKosher(), foodPost.isHot(),
-                    foodPost.isCold(), foodPost.isClosed(),
-                    foodPost.isDairy(), foodPost.isMeat(),
-                    imageUrl
-            );
-        }
+    private void savePostToFirestore() {
+        // הפניה ל-Firestore
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        db.collection("foodPosts")
+        // יצירת אובייקט פוסט
+        Map<String, Object> foodPost = new HashMap<>();
+        foodPost.put("description", post.getDescription());
+        foodPost.put("filters", post.getFilters());
+        foodPost.put("imageUrl", post.getImageUrl());
+        foodPost.put("timestamp", System.currentTimeMillis());
+
+        // שמירת הפוסט בקולקציה "posts"
+        firestore.collection("posts")
                 .add(foodPost)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Food shared successfully!", Toast.LENGTH_SHORT).show();
-                    finish();
+                    Log.d("Firestore", "Post uploaded successfully with ID: " + documentReference.getId());
+                    Toast.makeText(this, "Post uploaded successfully", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to share food", Toast.LENGTH_SHORT).show();
+                    Log.e("Firestore", "Post upload failed", e);
+                    Toast.makeText(this, "Post upload failed", Toast.LENGTH_SHORT).show();
                 });
     }
 }
