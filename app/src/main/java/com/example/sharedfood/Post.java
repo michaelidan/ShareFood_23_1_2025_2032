@@ -2,7 +2,6 @@ package com.example.sharedfood;
 
 import android.net.Uri;
 
-import java.io.File;
 import java.util.List;
 
 public class Post {
