@@ -4,7 +4,7 @@ plugins {
 
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-}
+    alias(libs.plugins.kotlin.kapt)}
 
 android {
     namespace = "com.example.sharedfood"
@@ -36,7 +36,6 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-
     buildFeatures {
         compose = true
     }
@@ -53,6 +52,9 @@ configurations.all {
 dependencies {
     // Force Kotlin stdlib version
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.22")
+
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    kapt("com.github.bumptech.glide:compiler:4.15.1")
 
     // Firebase BoM to manage versions of Firebase libraries
     implementation(platform("com.google.firebase:firebase-bom:32.1.0")) // Update to the latest BoM version
@@ -111,8 +113,4 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-}
-
-fun kotlinOptions(function: () -> Unit) {
-
 }
