@@ -3,6 +3,8 @@ package com.example.sharedfood;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -25,6 +27,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import android.location.Location;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -58,10 +65,11 @@ public class ShareYourFoodActivity extends AppCompatActivity {
     private StorageReference storageRef;
    private Uri imageUri;
     private ImageView imageView;
+    private FusedLocationProviderClient fusedLocationClient;
 
     List<String> selectedFilters = new ArrayList<>();
     Post post;
-
+    private EditText cityEditText;
     CheckBox kosherCheckBox, hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
 
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
@@ -92,10 +100,14 @@ public class ShareYourFoodActivity extends AppCompatActivity {
             }
     );
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_your_food);
+
+        // אתחול השדות
+        cityEditText = findViewById(R.id.cityEditText);
 
         kosherCheckBox = findViewById(R.id.kosherCheckBox);
         hotCheckBox = findViewById(R.id.hotCheckBox);
@@ -124,25 +136,52 @@ public class ShareYourFoodActivity extends AppCompatActivity {
 
         // Share Food button listener
         uploadPostButton.setOnClickListener(v -> {
+            // קבלת העיר מהקלט של המשתמש
             String foodDescription = foodDescriptionEditText.getText().toString().trim();
-
+            String city = cityEditText.getText().toString().trim();
             if (foodDescription.isEmpty()) {
                 Toast.makeText(this, "Please enter a description", Toast.LENGTH_SHORT).show();
                 return;
             }
             else{
                 post.setDescription(foodDescription);
+                if (!city.isEmpty()) {
+                    setGeoLocation(city); // שמירה של המיקום לפי העיר
+                }
+                post.setCity(city);
                 post.setImageUri(imageUri);
                 updateSelectedFilters();
                 setUserIdForPost();
+
             }
          uploadPost();
         });
     }
 
+    // הפונקציה המתבצעת כדי להמיר את העיר ל-GPS
+    public void setGeoLocation(String city) {
+        Geocoder geocoder = new Geocoder(this, new Locale("he", "IL"));  // הגדרת Locale לעברית
+        try {
+            List<Address> addresses = geocoder.getFromLocationName(city, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                double latitude = address.getLatitude();
+                double longitude = address.getLongitude();
+
+                // המרת המיקום ל-GeoPoint
+                GeoPoint location = new GeoPoint(latitude, longitude);
+                post.setLocation(location); // שמירה במיקום של הפוסט
+            } else {
+                Toast.makeText(this, "City not found", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error geocoding city", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void updateSelectedFilters() {
         if(post.getFilters()!=null) {
-
             post.getFilters().clear();  // מנקה את הרשימה קודם כל
         }
         if (meatCheckBox.isChecked()) selectedFilters.add("Meat");
@@ -151,16 +190,6 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         if (coldCheckBox.isChecked()) selectedFilters.add("Cold");
         if (kosherCheckBox.isChecked()) selectedFilters.add("Kosher");
         post.setFilters(selectedFilters);
-    }
-
-    private boolean isValidImageUri(Uri uri) {
-        if (uri == null) return false;
-        try {
-            getContentResolver().openInputStream(uri).close();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     private void showImageSourceDialog() {
@@ -232,6 +261,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
             }
         }
 
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -252,26 +282,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
             }
         }
     }
-/*
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
-            if (requestCode == CAMERA_REQUEST_CODE && data != null && data.getData() != null) {
-                post.setImageUri(data.getData());
-            } else if (requestCode == GALLERY_REQUEST_CODE && data != null && data.getData() != null) {
-                post.setImageUri(data.getData());
-            }
-            if (post.getImageUri() != null) {
-                try {
-                    imageView.setImageURI(post.getImageUri());
-                } catch (Exception e) {
-                }
-            }
-        }
-    }
- */
 
     private void uploadPost() {
         if (post == null || post.getImageUri() == null) {
@@ -305,6 +316,8 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         foodPost.put("filters", post.getFilters());
         foodPost.put("imageUri", post.getImageUri());
         foodPost.put("userId", post.getUserId());
+        foodPost.put("location", post.getLocation());
+        foodPost.put("city", post.getCity());
         foodPost.put("timestamp", System.currentTimeMillis());
 
         // שמירת הפוסט בקולקציה "posts"
@@ -338,5 +351,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
         }
     }
-
 }
+
+
+

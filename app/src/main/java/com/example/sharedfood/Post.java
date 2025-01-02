@@ -2,7 +2,17 @@ package com.example.sharedfood;
 
 import android.net.Uri;
 
+import android.location.Address;
+import android.location.Geocoder;
+import java.io.IOException;
 import java.util.List;
+import com.google.firebase.firestore.GeoPoint;
+import android.content.Context;
+
+import com.google.firebase.firestore.GeoPoint;
+
+import java.util.List;
+import java.util.Locale;
 
 public class Post {
     // הגדרת השדות כ- final כדי למנוע מהם שינוי אחרי יצירת האובייקט
@@ -11,7 +21,8 @@ public class Post {
     private List<String> filters;
     private String imageUrl; // URL של התמונה (יכול להשתנות אחרי יצירת האובייקט)
     private Uri imageUri; // URI של התמונה
-
+    private String city;
+    private GeoPoint location; // מיקום המשתמש, מסוג GeoPoint
 
     // Constructor
     public Post(String description, List<String> filters, String imageUrl) {
@@ -61,4 +72,20 @@ public class Post {
         this.imageUri = imageUri;
 
     }
+    public GeoPoint getLocation() {
+        return location;
+    }
+
+    public void setLocation(GeoPoint location) {
+        this.location = location;
+    }
+    // הוספת גטרים וסטטרים לשדה העיר
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
 }
