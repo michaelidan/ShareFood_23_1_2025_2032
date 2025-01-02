@@ -33,12 +33,16 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Other activities -->
+        </activity>
+        <!-- Other activities -->
         <activity
             android:name=".ShareYourFoodActivity"
             android:exported="true" />
         <activity
             android:name=".HomePageActivity"
+            android:exported="true" />
+        <activity
+            android:name=".MyPostsActivity"
             android:exported="true" />
         <activity
             android:name=".SignUpActivity"
