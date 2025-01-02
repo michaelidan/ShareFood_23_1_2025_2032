@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Post {
     // הגדרת השדות כ- final כדי למנוע מהם שינוי אחרי יצירת האובייקט
-    private String id;
+    private String userId;
     private String description;
     private List<String> filters;
     private String imageUrl; // URL של התמונה (יכול להשתנות אחרי יצירת האובייקט)
@@ -23,14 +23,12 @@ public class Post {
     public Post() {}
 
     // Getters and setters
-    public String getId() {
-        return id;
+    public String getUserId() {
+        return userId;
     }
-
-    public void setId(String id) {
-        this.id = id;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
-
     public String getDescription() {
         return description;
     }

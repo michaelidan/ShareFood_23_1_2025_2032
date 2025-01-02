@@ -30,6 +30,8 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +61,6 @@ public class ShareYourFoodActivity extends AppCompatActivity {
 
     List<String> selectedFilters = new ArrayList<>();
     Post post;
-    String imageUrl;
 
     CheckBox kosherCheckBox, hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
 
@@ -119,13 +120,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         // Set up button click listeners
         selectImageButton.setOnClickListener(v -> showImageSourceDialog());
 
-       /*
-        selectImageButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            activityResultLauncher.launch(intent);
-        });
-        */
+
 
         // Share Food button listener
         uploadPostButton.setOnClickListener(v -> {
@@ -139,6 +134,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
                 post.setDescription(foodDescription);
                 post.setImageUri(imageUri);
                 updateSelectedFilters();
+                setUserIdForPost();
             }
          uploadPost();
         });
@@ -187,7 +183,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.CAMERA},
                     CAMERA_PERMISSION_REQUEST_CODE);
         } else {
-            openCamera();
+            
         }
     }
 
@@ -307,7 +303,8 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         Map<String, Object> foodPost = new HashMap<>();
         foodPost.put("description", post.getDescription());
         foodPost.put("filters", post.getFilters());
-        foodPost.put("imageUrl", post.getImageUrl());
+        foodPost.put("imageUri", post.getImageUri());
+        foodPost.put("userId", post.getUserId());
         foodPost.put("timestamp", System.currentTimeMillis());
 
         // שמירת הפוסט בקולקציה "posts"
@@ -316,10 +313,30 @@ public class ShareYourFoodActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentReference -> {
                     Log.d("Firestore", "Post uploaded successfully with ID: " + documentReference.getId());
                     Toast.makeText(this, "Post uploaded successfully", Toast.LENGTH_SHORT).show();
+                    navigateToHomePage(); // Navigate to HomePage
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Firestore", "Post upload failed", e);
                     Toast.makeText(this, "Post upload failed", Toast.LENGTH_SHORT).show();
                 });
     }
+
+    private void navigateToHomePage() {
+        Intent intent = new Intent(ShareYourFoodActivity.this, HomePageActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish(); // מסיים את האקטיביטי הנוכחי
+    }
+
+    private void setUserIdForPost() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid(); // מזהה המשתמש הנוכחי
+            post.setUserId(userId); // שמירה של ה-ID של המשתמש בפוסט
+        } else {
+            Log.e("ShareYourFoodActivity", "User not logged in");
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
