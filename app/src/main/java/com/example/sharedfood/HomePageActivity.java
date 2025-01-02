@@ -35,5 +35,10 @@ public class HomePageActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        findViewById(R.id.myPostsButton).setOnClickListener(v -> {
+            Intent intent = new Intent(HomePageActivity.this, MyPostsActivity.class);
+            startActivity(intent);
+        });
+
     }
 }
