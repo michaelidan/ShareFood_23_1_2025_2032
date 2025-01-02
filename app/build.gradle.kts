@@ -73,6 +73,8 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
     }
 
+    implementation("com.google.android.gms:play-services-location:18.0.0")
+
     // Other dependencies
     implementation("androidx.appcompat:appcompat:1.6.0")
     implementation("com.google.android.material:material:1.9.0")
