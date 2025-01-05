@@ -2,19 +2,14 @@ package com.example.sharedfood;
 
 import android.net.Uri;
 
-import android.location.Address;
-import android.location.Geocoder;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import com.google.firebase.firestore.GeoPoint;
-import android.content.Context;
 
-import com.google.firebase.firestore.GeoPoint;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import java.util.List;
-import java.util.Locale;
-
-public class Post {
+public class Post implements Parcelable {
     // הגדרת השדות כ- final כדי למנוע מהם שינוי אחרי יצירת האובייקט
     private String userId;
     private String description;
@@ -32,6 +27,55 @@ public class Post {
     }
     // Empty constructor for Firebase
     public Post() {}
+
+    // Constructor for Parcel
+    protected Post(Parcel in) {
+        userId = in.readString();
+        description = in.readString();
+        filters = new ArrayList<>();
+        in.readStringList(filters);
+        imageUrl = in.readString();
+        imageUri = in.readParcelable(Uri.class.getClassLoader());
+        city = in.readString();
+        double latitude = in.readDouble();
+        double longitude = in.readDouble();
+        location = new GeoPoint(latitude, longitude);
+    }
+
+    // Parcelable Creator
+    public static final Creator<Post> CREATOR = new Creator<Post>() {
+        @Override
+        public Post createFromParcel(Parcel in) {
+            return new Post(in);
+        }
+
+        @Override
+        public Post[] newArray(int size) {
+            return new Post[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(userId);
+        dest.writeString(description);
+        dest.writeStringList(filters);
+        dest.writeString(imageUrl);
+        dest.writeParcelable(imageUri, flags);
+        dest.writeString(city);
+        if (location != null) {
+            dest.writeDouble(location.getLatitude());
+            dest.writeDouble(location.getLongitude());
+        } else {
+            dest.writeDouble(0.0);
+            dest.writeDouble(0.0);
+        }
+    }
 
     // Getters and setters
     public String getUserId() {
