@@ -31,7 +31,7 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
     private TextView emptyStateText;
     private List<Post> postsList;
     private String currentUserId;
-
+    Post post;
     private static final String TAG = "MyPostsActivity";
 
     @Override
@@ -76,30 +76,41 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
                     if (task.isSuccessful()) {
                         postsList.clear();
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            Log.d(TAG, document.getId() + " => " + document.getData());
-
-                            // המרה ל-Post
                             try {
-                                Post post = document.toObject(Post.class);
+                                // קודם ניצור אובייקט Post מהדוקומנט
+                                Post post = new Post();
 
-                                if (post != null) {
-                                    // המרת ה-URI של התמונה אם קיים
-                                    String imageUriString = document.getString("imageUri");
-                                    if (imageUriString != null) {
-                                        post.setImageUri(Uri.parse(imageUriString));
-                                    }
+                                // נעתיק את הנתונים הבסיסיים
+                                post.setUserId(document.getString("userId"));
+                                post.setDescription(document.getString("description"));
 
-                                    // המרת מיקום אם קיים
-                                    GeoPoint geoPoint = document.getGeoPoint("location");
-                                    if (geoPoint != null) {
-                                        post.setLocation(geoPoint);
-                                    }
+                                // טיפול ברשימת הפילטרים
+                                @SuppressWarnings("unchecked")
+                                List<String> filters = (List<String>) document.get("filters");
+                                post.setFilters(filters);
 
-                                    // הוספת הפוסט לרשימה
-                                    postsList.add(post);
-                                } else {
-                                    Log.w(TAG, "Failed to convert document to Post object.");
+                                // טיפול ב-imageUrl
+                                String imageUrl = document.getString("imageUrl");
+                                post.setImageUrl(imageUrl);
+
+                                // טיפול ב-imageUri - המרה מ-String ל-Uri
+                                String imageUriString = document.getString("imageUri");
+                                if (imageUriString != null && !imageUriString.isEmpty()) {
+                                    post.setImageUri(Uri.parse(imageUriString));
                                 }
+
+                                // טיפול במיקום
+                                GeoPoint geoPoint = document.getGeoPoint("location");
+                                if (geoPoint != null) {
+                                    post.setLocation(geoPoint);
+                                }
+
+                                // טיפול בעיר
+                                String city = document.getString("city");
+                                post.setCity(city);
+
+                                postsList.add(post);
+
                             } catch (Exception e) {
                                 Log.e(TAG, "Error parsing document to Post: " + e.getMessage());
                             }
@@ -109,7 +120,6 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
                         adapter.notifyDataSetChanged();
 
                     } else {
-                        // במקרה של שגיאה
                         Log.w(TAG, "Error getting documents.", task.getException());
                         Toast.makeText(MyPostsActivity.this, "שגיאה בטעינת הפוסטים", Toast.LENGTH_SHORT).show();
                     }

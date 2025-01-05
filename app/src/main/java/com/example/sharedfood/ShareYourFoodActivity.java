@@ -62,7 +62,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
     List<String> selectedFilters = new ArrayList<>();
     Post post;
     private EditText cityEditText;
-    CheckBox kosherCheckBox, hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
+    CheckBox kosherCheckBox,veganCheckBox, vegetarianCheckBox, glutenFreeCheckBox, hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
 
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -107,7 +107,9 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         closedCheckBox = findViewById(R.id.closedCheckBox);
         dairyCheckBox = findViewById(R.id.dairyCheckBox);
         meatCheckBox = findViewById(R.id.meatCheckBox);
-
+        veganCheckBox = findViewById(R.id.veganCheckBox);
+        vegetarianCheckBox = findViewById(R.id.vegetarianCheckBox);
+        glutenFreeCheckBox = findViewById(R.id.glutenFreeCheckBox);
         // Initialize views
         foodDescriptionEditText = findViewById(R.id.foodDescriptionEditText);
         uploadPostButton  = findViewById(R.id.uploadPostButton );
@@ -181,6 +183,9 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         if (hotCheckBox.isChecked()) selectedFilters.add("Hot");
         if (coldCheckBox.isChecked()) selectedFilters.add("Cold");
         if (kosherCheckBox.isChecked()) selectedFilters.add("Kosher");
+        if (veganCheckBox.isChecked()) selectedFilters.add("vegan");
+        if (vegetarianCheckBox.isChecked()) selectedFilters.add("vegetarian");
+        if (glutenFreeCheckBox.isChecked()) selectedFilters.add("glutenFree");
         post.setFilters(selectedFilters);
     }
 
