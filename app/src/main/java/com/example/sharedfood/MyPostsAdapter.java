@@ -64,17 +64,8 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
         // תיאור
         holder.descriptionText.setText(post.getDescription() != null ? post.getDescription() : "תיאור לא זמין");
 
-        // תמונה
-        if (post.getImageUri() != null) {
-            Glide.with(holder.imageView.getContext())
-                    .load(post.getImageUri())
-                    .centerCrop()
-                    .into(holder.imageView);
-            holder.imageView.setVisibility(View.VISIBLE);
-        } else {
-            holder.imageView.setVisibility(View.GONE);
-        }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // טיפול בתמונה
         if (post.getImageBitmap() != null) {
             holder.imageView.setImageBitmap(post.getImageBitmap());
             holder.imageView.setVisibility(View.VISIBLE);
