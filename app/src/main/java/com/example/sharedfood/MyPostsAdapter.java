@@ -36,7 +36,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
         TextView locationText;
         ChipGroup filtersChipGroup;
         ImageButton editButton;
-        ImageButton deleteButton;
+        ImageButton deletePostButton;
 
         public PostViewHolder(View view) {
             super(view);
@@ -45,7 +45,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
             locationText = view.findViewById(R.id.postLocation);
             filtersChipGroup = view.findViewById(R.id.filtersChipGroup);
             editButton = view.findViewById(R.id.editButton);
-            deleteButton = view.findViewById(R.id.deleteButton);
+            deletePostButton = view.findViewById(R.id.deletePostButton);
         }
     }
 
@@ -97,7 +97,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
 
         // כפתורי עריכה ומחיקה
         holder.editButton.setOnClickListener(v -> listener.onEditClick(post));
-        holder.deleteButton.setOnClickListener(v -> listener.onDeleteClick(post));
+        holder.deletePostButton.setOnClickListener(v -> listener.onDeleteClick(post));
     }
 
     @Override
