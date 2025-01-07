@@ -19,6 +19,9 @@ public class Post implements Parcelable {
     private String city;
     private GeoPoint location; // מיקום המשתמש, מסוג GeoPoint
 
+    // === הוספת שדה ID ייחודי לפוסט ===
+    private String id;
+    // === סוף ההוספה ===
     // Constructor
     public Post(String description, List<String> filters, String imageUrl) {
         this.description = description;
@@ -40,6 +43,11 @@ public class Post implements Parcelable {
         double latitude = in.readDouble();
         double longitude = in.readDouble();
         location = new GeoPoint(latitude, longitude);
+
+        // === הוספת קריאת ID מ-Parcel ===
+        // Start Addition Michael, for Admin $$$$$$$$$$ 7.01.2025
+        id = in.readString();
+        // End Addition Michael, for Admin ########### 7.01.2025
     }
 
     // Parcelable Creator
@@ -75,6 +83,10 @@ public class Post implements Parcelable {
             dest.writeDouble(0.0);
             dest.writeDouble(0.0);
         }
+        // === הוספת כתיבת ה-ID ל-Parcel ===
+        // Start Addition Michael, for Admin $$$$$$$$$$ 7.01.2025
+        dest.writeString(id);
+        // End Addition Michael, for Admin ########### 7.01.2025
     }
 
     // Getters and setters
@@ -131,5 +143,16 @@ public class Post implements Parcelable {
     public void setCity(String city) {
         this.city = city;
     }
+
+    // === הוספת Getter ו-Setter לשדה ID ===
+    // Start Addition Michael, for Admin $$$$$$$$$$ 7.01.2025
+    public String getId() { //
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+    // End Addition Michael, for Admin ############ 7.01.2025
 
 }
