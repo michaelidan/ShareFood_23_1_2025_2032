@@ -147,7 +147,7 @@ public class Post implements Parcelable {
         this.city = city;
     }
 
-    ///////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
     public void setImageBitmap(Bitmap imageBitmap) {
         this.imageBitmap = imageBitmap;
     }

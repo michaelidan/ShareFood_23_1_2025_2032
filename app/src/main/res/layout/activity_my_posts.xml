@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!--  טקסט אם אין פוסטים -->
+        <!-- טקסט אם אין פוסטים -->
         <TextView
             android:id="@+id/emptyStateText"
             android:layout_width="wrap_content"

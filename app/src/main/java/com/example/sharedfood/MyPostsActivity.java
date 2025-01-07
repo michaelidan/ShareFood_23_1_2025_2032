@@ -92,7 +92,7 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
                                 post.setUserId(document.getString("userId"));
                                 post.setDescription(document.getString("description"));
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                 // שחזור התמונה
                                 String base64Image = document.getString("imageBase64");
                                 if (base64Image != null) {
