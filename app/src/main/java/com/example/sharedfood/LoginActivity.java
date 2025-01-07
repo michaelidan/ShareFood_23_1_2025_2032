@@ -10,6 +10,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+// my import addition to check if the user is an admin, michael %%%
+import java.util.List;
+import java.util.Arrays;
+// end of my import addition, michael %%%
+
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -39,9 +44,15 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnCompleteListener(this, task -> {
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
+
+                            // my addition to check if the user is an admin, michael %%%
+                            checkIfUserIsAdmin(user); // בדיקה אם המשתמש הוא מנהל
+                            // end of my addition, michael %%%
+                            // HERE PUT LIST OF ADMINS EMAILS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             if (user != null && user.getEmail() != null) {
-                                // בדיקת אם האימייל שייך לאדמין
-                                if (user.getEmail().trim().equalsIgnoreCase("daniell@gmail.com")) {
+                                List<String> adminEmails = Arrays.asList("mici9578@gmail.com", "admin@example.com", "secondAdmin@example.com");
+                                if (adminEmails.contains(user.getEmail().trim())) {
+                                    Toast.makeText(LoginActivity.this, "ברוך הבא, מנהל!", Toast.LENGTH_SHORT).show();
                                     Intent intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
                                     startActivity(intent);
                                     finish();
@@ -57,4 +68,20 @@ public class LoginActivity extends AppCompatActivity {
                     });
         });
     }
+
+    // my addition - added the checkIfUserIsAdmin function, michael %%%
+    private void checkIfUserIsAdmin(FirebaseUser user) {
+        List<String> adminEmails = Arrays.asList("admin@example.com", "secondAdmin@example.com");
+        if (user != null && user.getEmail() != null && adminEmails.contains(user.getEmail().trim())) {
+            Toast.makeText(LoginActivity.this, "ברוך הבא, מנהל!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+    // end of my addition - added the checkIfUserIsAdmin function, michael %%%
 }

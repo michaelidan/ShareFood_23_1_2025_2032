@@ -1,5 +1,6 @@
 package com.example.sharedfood;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 
 import java.util.ArrayList;
@@ -18,6 +19,11 @@ public class Post implements Parcelable {
     private Uri imageUri; // URI של התמונה
     private String city;
     private GeoPoint location; // מיקום המשתמש, מסוג GeoPoint
+    private String id;
+   ///////////////////////////////////////////////
+    private Bitmap imageBitmap;
+    private String imageBase64;
+    ////////////////////////////////////////////////
 
     // Constructor
     public Post(String description, List<String> filters, String imageUrl) {
@@ -40,6 +46,7 @@ public class Post implements Parcelable {
         double latitude = in.readDouble();
         double longitude = in.readDouble();
         location = new GeoPoint(latitude, longitude);
+        id = in.readString();
     }
 
     // Parcelable Creator
@@ -75,9 +82,17 @@ public class Post implements Parcelable {
             dest.writeDouble(0.0);
             dest.writeDouble(0.0);
         }
+        dest.writeString(id);
     }
 
     // Getters and setters
+    public String getId() { //
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
     public String getUserId() {
         return userId;
     }
@@ -132,4 +147,22 @@ public class Post implements Parcelable {
         this.city = city;
     }
 
+    ////////////////////////////////////////////////////////////////
+    public void setImageBitmap(Bitmap imageBitmap) {
+        this.imageBitmap = imageBitmap;
+    }
+
+    public Bitmap getImageBitmap() {
+        return this.imageBitmap;
+    }
+
+    public String getImageBase64() {
+        return this.imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
+    }
+
+    ////////////////////////////////////////////////////////////////////
 }

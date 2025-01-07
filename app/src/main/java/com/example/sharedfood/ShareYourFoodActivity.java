@@ -16,6 +16,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import android.util.Base64;
+import java.io.ByteArrayOutputStream;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import java.io.InputStream;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -307,11 +313,27 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         // הפניה ל-Firestore
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
+        if (post.getImageUri() != null) {
+            try {
+                // המרת התמונה ל-Base64
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), post.getImageUri());
+                String base64Image = compressImageToBase64(bitmap);
+                post.setImageBase64(base64Image); // ודאי שהשדה נוסף למחלקת Post
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Failed to compress image", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
         // יצירת אובייקט פוסט
         Map<String, Object> foodPost = new HashMap<>();
         foodPost.put("description", post.getDescription());
         foodPost.put("filters", post.getFilters());
         foodPost.put("imageUri", post.getImageUri());
+        /////////////////////////////////////////////////////////////////////////////////////////
+        foodPost.put("imageBase64", post.getImageBase64()); // שמירת Base64
+        //////////////////////////////////////////////////////////////////////////////////////////
         foodPost.put("userId", post.getUserId());
         foodPost.put("location", post.getLocation());
         foodPost.put("city", post.getCity());
@@ -347,6 +369,26 @@ public class ShareYourFoodActivity extends AppCompatActivity {
             Log.e("ShareYourFoodActivity", "User not logged in");
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String convertImageToBase64(Uri imageUri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(imageUri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            byte[] byteArray = outputStream.toByteArray();
+            return Base64.encodeToString(byteArray, Base64.DEFAULT);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    private String compressImageToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream); // 50 = רמת דחיסה
+        byte[] byteArray = outputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
 }
 

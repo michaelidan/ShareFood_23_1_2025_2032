@@ -68,9 +68,9 @@
                 android:layout_marginEnd="8dp"/>
 
             <ImageButton
-                android:id="@+id/deleteButton"
+                android:id="@+id/deletePostButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height= "wrap_content"
                 android:src="@drawable/ic_delete"
                 android:contentDescription="מחק פוסט"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
