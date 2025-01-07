@@ -331,7 +331,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         foodPost.put("description", post.getDescription());
         foodPost.put("filters", post.getFilters());
         foodPost.put("imageUri", post.getImageUri());
-        /////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////
         foodPost.put("imageBase64", post.getImageBase64()); // שמירת Base64
         //////////////////////////////////////////////////////////////////////////////////////////
         foodPost.put("userId", post.getUserId());
