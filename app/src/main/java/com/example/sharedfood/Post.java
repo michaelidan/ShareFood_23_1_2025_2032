@@ -20,7 +20,7 @@ public class Post implements Parcelable {
     private String city;
     private GeoPoint location; // מיקום המשתמש, מסוג GeoPoint
     private String id;
-   ///////////////////////////////////////////////
+    ///////////////////////////////////////////////
     private Bitmap imageBitmap;
     private String imageBase64;
     ////////////////////////////////////////////////
@@ -163,6 +163,9 @@ public class Post implements Parcelable {
     public void setImageBase64(String imageBase64) {
         this.imageBase64 = imageBase64;
     }
-
+    public boolean hasFilter(String filter) {
+        if (filters == null) return false;
+        return filters.contains(filter);
+    }
     ////////////////////////////////////////////////////////////////////
 }
