@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "315482238302-hlre8b7kac2leqrtc9p6u4o6cif34p68.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.foodshare",
+            "certificate_hash": "759abd57e9ab6fbee789416488deee223e673429"
+          }
+        },
+        {
           "client_id": "315482238302-r2ku1luonhrfro38i5tuegk2lgma5b9n.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
