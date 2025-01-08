@@ -1,15 +1,18 @@
 package com.example.sharedfood;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
-import android.widget.LinearLayout;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -17,79 +20,136 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FeedActivity extends AppCompatActivity {
-
+    private RecyclerView recyclerView;
+    private PostAdapter adapter;
     private FirebaseFirestore db;
-    private LinearLayout postsContainer;
+    private TextView emptyStateText;
+    private List<Post> postsList;
+
+    // פילטרים
+    private CheckBox kosherCheckBox, veganCheckBox, vegetarianCheckBox, glutenFreeCheckBox,
+            hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
+
+    private static final String TAG = "FeedActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feed);
 
-        // Initialize Firestore and UI elements
+        // Initialize Firebase
         db = FirebaseFirestore.getInstance();
-        postsContainer = findViewById(R.id.postsContainer);
 
-        // Load posts from Firestore
-        loadPostsFromFirestore();
+        // Initialize views
+        recyclerView = findViewById(R.id.postsRecyclerView);
+        emptyStateText = findViewById(R.id.emptyStateText);
+        postsList = new ArrayList<>();
+
+        // Initialize filters
+        kosherCheckBox = findViewById(R.id.kosherCheckBox);
+        veganCheckBox = findViewById(R.id.veganCheckBox);
+        vegetarianCheckBox = findViewById(R.id.vegetarianCheckBox);
+        glutenFreeCheckBox = findViewById(R.id.glutenFreeCheckBox);
+        hotCheckBox = findViewById(R.id.hotCheckBox);
+        coldCheckBox = findViewById(R.id.coldCheckBox);
+        closedCheckBox = findViewById(R.id.closedCheckBox);
+        dairyCheckBox = findViewById(R.id.dairyCheckBox);
+        meatCheckBox = findViewById(R.id.meatCheckBox);
+
+        setupRecyclerView();
+
+        // הוספת מאזינים לפילטרים
+        setupFilterListeners();
+
+        loadPosts();
     }
 
-    private void loadPostsFromFirestore() {
+    private void setupRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new PostAdapter(postsList);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void loadPosts() {
         db.collection("posts")
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Post> posts = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        try {
-                            Post post = document.toObject(Post.class);
-                            posts.add(post);
-                        } catch (Exception e) {
-                            Log.e("FeedActivity", "Error converting document to Post", e);
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        postsList.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            try {
+                                Post post = new Post();
+                                post.setDescription(document.getString("description"));
+
+                                // שחזור תמונה
+                                String base64Image = document.getString("imageBase64");
+                                if (base64Image != null) {
+                                    Bitmap bitmap = decodeBase64ToBitmap(base64Image);
+                                    post.setImageBitmap(bitmap);
+                                }
+
+                                post.setFilters((List<String>) document.get("filters"));
+                                post.setCity(document.getString("city"));
+
+                                if (isPostMatchingFilters(post)) {
+                                    postsList.add(post);
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error parsing document: " + e.getMessage());
+                            }
                         }
+
+                        updateEmptyState();
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        Log.w(TAG, "Error getting documents.", task.getException());
                     }
-                    displayPosts(posts);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("FeedActivity", "Failed to load posts", e);
-                    Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show();
                 });
     }
 
-    private void displayPosts(List<Post> posts) {
-        if (posts.isEmpty()) {
-            Toast.makeText(this, "No posts available", Toast.LENGTH_SHORT).show();
-            return;
+    private void setupFilterListeners() {
+        CheckBox[] checkBoxes = {
+                kosherCheckBox, veganCheckBox, vegetarianCheckBox,
+                glutenFreeCheckBox, hotCheckBox, coldCheckBox,
+                closedCheckBox, dairyCheckBox, meatCheckBox
+        };
+
+        for (CheckBox checkBox : checkBoxes) {
+            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> loadPosts());
         }
+    }
 
-        postsContainer.removeAllViews(); // Clear previous views
+    private boolean isPostMatchingFilters(Post post) {
+        if (kosherCheckBox.isChecked() && !post.hasFilter("Kosher")) return false;
+        if (veganCheckBox.isChecked() && !post.hasFilter("vegan")) return false;
+        if (vegetarianCheckBox.isChecked() && !post.hasFilter("vegetarian")) return false;
+        if (glutenFreeCheckBox.isChecked() && !post.hasFilter("glutenFree")) return false;
+        if (hotCheckBox.isChecked() && !post.hasFilter("Hot")) return false;
+        if (coldCheckBox.isChecked() && !post.hasFilter("Cold")) return false;
+        if (closedCheckBox.isChecked() && !post.hasFilter("Closed")) return false;
+        if (dairyCheckBox.isChecked() && !post.hasFilter("Dairy")) return false;
+        if (meatCheckBox.isChecked() && !post.hasFilter("Meat")) return false;
 
-        for (Post post : posts) {
-            // Create a layout for each post
-            LinearLayout postLayout = new LinearLayout(this);
-            postLayout.setOrientation(LinearLayout.VERTICAL);
-            postLayout.setPadding(16, 16, 16, 16);
+        return true;
+    }
 
-            // Add description
-            if (post.getDescription() != null) {
-                TextView descriptionView = new TextView(this);
-                descriptionView.setText(post.getDescription());
-                postLayout.addView(descriptionView);
-            }
+    private void updateEmptyState() {
+        if (postsList.isEmpty()) {
+            emptyStateText.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateText.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
+    }
 
-            // Add image if available or placeholder if not
-            if (post.getImageUri() != null ) {
-                ImageView imageView = new ImageView(this);
-                Glide.with(this).load(post.getImageUri()).into(imageView);
-                postLayout.addView(imageView);
-            } else {
-                // Add a placeholder image if imageUrl is null or empty
-                ImageView placeholder = new ImageView(this);
-                placeholder.setImageResource(R.drawable.placeholder_image); // Replace with your placeholder image
-                postLayout.addView(placeholder);
-            }
-
-            // Add the post layout to the container
-            postsContainer.addView(postLayout);
+    private Bitmap decodeBase64ToBitmap(String base64String) {
+        try {
+            byte[] decodedBytes = Base64.decode(base64String, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
