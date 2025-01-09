@@ -35,7 +35,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
         TextView descriptionText;
         TextView locationText;
         ChipGroup filtersChipGroup;
-        ImageButton editButton;
+        ImageButton editPostButton;
         ImageButton deletePostButton;
 
         public PostViewHolder(View view) {
@@ -44,7 +44,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
             descriptionText = view.findViewById(R.id.postDescription);
             locationText = view.findViewById(R.id.postLocation);
             filtersChipGroup = view.findViewById(R.id.filtersChipGroup);
-            editButton = view.findViewById(R.id.editButton);
+            editPostButton = view.findViewById(R.id.editPostButton);
             deletePostButton = view.findViewById(R.id.deletePostButton);
         }
     }
@@ -64,6 +64,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
         // תיאור
         holder.descriptionText.setText(post.getDescription() != null ? post.getDescription() : "תיאור לא זמין");
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // טיפול בתמונה
         if (post.getImageBitmap() != null) {
@@ -73,7 +74,8 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
             holder.imageView.setVisibility(View.GONE);
         }
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         // מיקום
         holder.locationText.setText(post.getCity() != null ? post.getCity() : "מיקום לא זמין");
 
@@ -95,7 +97,7 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
         }
 
         // כפתורי עריכה ומחיקה
-        holder.editButton.setOnClickListener(v -> listener.onEditClick(post));
+        holder.editPostButton.setOnClickListener(v -> listener.onEditClick(post));
         holder.deletePostButton.setOnClickListener(v -> listener.onDeleteClick(post));
     }
 
@@ -103,4 +105,4 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
     public int getItemCount() {
         return posts.size();
     }
-}
+} //+2 + Tipul Betmuna Shira
