@@ -15,18 +15,25 @@ public class AdminPostsAdapter extends RecyclerView.Adapter<AdminPostsAdapter.Po
 
     private final List<Post> postList;
     private final OnPostDeleteListener onPostDeleteListener;
+    private final OnPostEditListener onPostEditListener;
 
     // ממשק למחיקת פוסט (קריאה חיצונית לפונקציה מהאקטיביטי)
     public interface OnPostDeleteListener {
         void onDeletePost(String postId);
     }
-
-    // בנאי לקבלת רשימת פוסטים ומאזין למחיקה
-    public AdminPostsAdapter(List<Post> postList, OnPostDeleteListener listener) {
-        this.postList = postList;
-        this.onPostDeleteListener = listener;
+    // Michael, 8/01/2025, START $$$$$$$$$$$$$$$$$$$$$$
+    // הוספת ממשק לעריכת פוסט
+    public interface OnPostEditListener {
+        void onEditPost(Post post);
     }
 
+    // קיים כבר: בנאי המקבל רשימת פוסטים
+    public AdminPostsAdapter(List<Post> postList, OnPostDeleteListener deleteListener, OnPostEditListener editListener) {
+        this.postList = postList;
+        this.onPostDeleteListener = deleteListener;
+        this.onPostEditListener = editListener;
+    }
+    // Michael, 8/01/2025, END ########################
     @NonNull
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -44,7 +51,16 @@ public class AdminPostsAdapter extends RecyclerView.Adapter<AdminPostsAdapter.Po
             }
         });
 
+        // Michael, 8/01/2025, START ########################
+        // הוספת כפתור לעריכת פוסט
+        holder.editPostButton.setOnClickListener(v -> {
+            if (onPostEditListener != null) {
+                onPostEditListener.onEditPost(post);
+            }
+        });
+        // Michael, 8/01/2025, END ########################
     }
+
 
     @Override
     public int getItemCount() {
@@ -56,7 +72,9 @@ public class AdminPostsAdapter extends RecyclerView.Adapter<AdminPostsAdapter.Po
         TextView postDescription;
 
         Button deletePostButton;
-
+        // Michael, 8/01/2025, START $$$$$$$$$$$$$$$$$$$$$$
+        ImageButton editPostButton;
+        // Michael, 8/01/2025, END ########################
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
             postDescription = itemView.findViewById(R.id.postDescription);
@@ -64,4 +82,4 @@ public class AdminPostsAdapter extends RecyclerView.Adapter<AdminPostsAdapter.Po
             ImageButton deletePostButton = itemView.findViewById(R.id.deletePostButton);
         }
     }
-}
+} // +2
