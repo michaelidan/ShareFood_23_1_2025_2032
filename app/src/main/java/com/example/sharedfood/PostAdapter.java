@@ -48,7 +48,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             descriptionText = view.findViewById(R.id.postDescription);
             locationText = view.findViewById(R.id.postLocation);
             filtersChipGroup = view.findViewById(R.id.filtersChipGroup);
-            editButton = view.findViewById(R.id.editButton);
+            editButton = view.findViewById(R.id.editPostButton);
             deletePostButton = view.findViewById(R.id.deletePostButton);
         }
     }
