@@ -58,24 +58,23 @@
             android:layout_marginTop="8dp"
             android:gravity="end">
 
-            <ImageButton
-                android:id="@+id/editButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_edit"
-                android:contentDescription="ערוך פוסט"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:layout_marginEnd="8dp"/>
-
+            <!-- כפתור למחיקת פוסט -->
             <ImageButton
                 android:id="@+id/deletePostButton"
                 android:layout_width="wrap_content"
-                android:layout_height= "wrap_content"
+                android:layout_height="wrap_content"
                 android:src="@drawable/ic_delete"
-                android:contentDescription="מחק פוסט"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:layout_marginStart="8dp"/>
-        </LinearLayout>
+                android:contentDescription="מחק פוסט" />
 
+            <!-- כפתור חדש לעריכת פוסט -->
+            <ImageButton
+                android:id="@+id/editPostButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_edit"
+                android:contentDescription="ערוך פוסט" />
+
+        </LinearLayout>
+        <!-- +2 -->
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
