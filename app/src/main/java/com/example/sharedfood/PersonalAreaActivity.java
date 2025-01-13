@@ -61,11 +61,10 @@ public class PersonalAreaActivity extends AppCompatActivity {
                             QuerySnapshot querySnapshot = task.getResult();
                             int postCount = querySnapshot != null ? querySnapshot.size() : 0;
 
-                            // הצגת כמות הפוסטים
                             String postInfo = "Number of posts: " + postCount;
-                            userDetailsTextView.setText(email + "\n" + postInfo);
+                            userDetailsTextView.setText(email + "\n");
                         } else {
-                            userDetailsTextView.setText(email + "\nFailed to load post count.");
+                            userDetailsTextView.setText(email + "\n");
                         }
                     });
         } else {
