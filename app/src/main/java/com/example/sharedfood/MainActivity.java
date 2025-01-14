@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser != null) {
             // If the user is already signed in, navigate directly to HomePageActivity
-            if (currentUser.getEmail().trim().equalsIgnoreCase("daniell@gmail.com")) {
+            if (currentUser.getEmail().trim().equalsIgnoreCase("mici9578@gmail.com")) {
                 Intent intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
                 startActivity(intent);
                 finish();
