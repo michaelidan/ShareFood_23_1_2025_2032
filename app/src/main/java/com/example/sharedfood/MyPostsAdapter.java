@@ -18,18 +18,28 @@ import java.util.List;
 
 public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostViewHolder> {
     private List<Post> posts;
-    private PostClickListener listener;
+    // Michael START 14.01.2025 SSSSSSSSSSSSSSSSSSSSSS
+    private PostDeleteListener deleteListener;
+    private PostEditListener editListener; // מאזין לעריכה בנפרד
 
-    public interface PostClickListener {
-        void onEditClick(Post post);
-        void onDeleteClick(Post post);
+    // ממשקים שמגדיר אירועים לכפתורי עריכה ומחיקה
+    public interface PostEditListener {
+        void onEditClick(Post post); // אירוע בעת לחיצה על עריכה
     }
 
-    public MyPostsAdapter(List<Post> posts, PostClickListener listener) {
+    public interface PostDeleteListener {
+        void onDeleteClick(Post post); // אירוע בעת לחיצה על מחיקה
+    }
+
+
+    // בנאי המקבל רשימת פוסטים ומאזין אחד לשני האירועים
+    public MyPostsAdapter(List<Post> posts, PostDeleteListener deleteListener, PostEditListener editListener) {
         this.posts = posts;
-        this.listener = listener;
+        this.deleteListener = deleteListener;
+        this.editListener = editListener;  // (Michael ADD 14.01.2025)
     }
 
+    // Michael END 14.01.2025  EEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     public static class PostViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         TextView descriptionText;
@@ -97,8 +107,8 @@ public class MyPostsAdapter extends RecyclerView.Adapter<MyPostsAdapter.PostView
         }
 
         // כפתורי עריכה ומחיקה
-        holder.editPostButton.setOnClickListener(v -> listener.onEditClick(post));
-        holder.deletePostButton.setOnClickListener(v -> listener.onDeleteClick(post));
+        holder.editPostButton.setOnClickListener(v -> editListener.onEditClick(post));
+        holder.deletePostButton.setOnClickListener(v -> deleteListener.onDeleteClick(post));
     }
 
     @Override
