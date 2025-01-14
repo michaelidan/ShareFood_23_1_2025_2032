@@ -30,8 +30,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-
-public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter.PostClickListener {
+// Michel START 14/1/2025
+public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter.PostDeleteListener, MyPostsAdapter.PostEditListener {
+// Michael END 14/1/2025
     private RecyclerView recyclerView;
     private MyPostsAdapter adapter;
     private FirebaseFirestore db;
@@ -63,7 +64,7 @@ public class MyPostsActivity extends AppCompatActivity implements MyPostsAdapter
 
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MyPostsAdapter(postsList, this);
+        adapter = new MyPostsAdapter(postsList, this, this); // Michael START-END 14.01.2025
         recyclerView.setAdapter(adapter);
     }
 
