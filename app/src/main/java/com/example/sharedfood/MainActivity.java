@@ -2,202 +2,69 @@ package com.example.sharedfood;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FacebookAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.android.gms.common.SignInButton;
-import com.facebook.FacebookSdk;
-import com.google.firebase.auth.GoogleAuthProvider;
+public class AdminDashboardActivity extends AppCompatActivity {
 
-public class MainActivity extends AppCompatActivity {
-
-    private Button loginButton, signUpButton;
-    private SignInButton googleSignInButton;
-    private FirebaseAuth firebaseAuth;
-    private GoogleSignInClient googleSignInClient;
-    CallbackManager mCallbackManager;
-
-    FirebaseUser user;
-
-    private static final int RC_SIGN_IN = 100;
-    private static final String TAG = "MainActivity";
+    private RecyclerView postsRecyclerView;
+    private MyPostsAdapter postsAdapter; // replace: AdminPostAdapter -> MyPostsAdapter
+    private List<Post> postList;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_admin_dashboard);
 
-        // Initialize UI components
-        loginButton = findViewById(R.id.loginButton);
-        signUpButton = findViewById(R.id.signUpButton);
-        googleSignInButton = findViewById(R.id.googleSignInButton);
+        postsRecyclerView = findViewById(R.id.postsRecyclerView);
+        postsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Initialize Firebase Auth
-        firebaseAuth = FirebaseAuth.getInstance();
+// Michael, 8/01/2025, START ########################
+// קיים כבר: יצירת רשימת פוסטים ואדפטר
+        postList = new ArrayList<>();
+        postsAdapter = new MyPostsAdapter(postList, this::deletePost, this::editPost); // הוספת האופציה לעריכה  // replace: AdminPostAdapter -> MyPostsAdapter
+        postsRecyclerView.setAdapter(postsAdapter);
+// Michael, 8/01/2025, END ########################
 
-        // Initialize Google Sign-In Options
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id)) // Replace with your Client ID
-                .requestEmail()
-                .build();
+        db = FirebaseFirestore.getInstance();
 
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
-
-        // Check if the user is already signed in. If so, go to the HomePageActivity
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser != null) {
-            // If the user is already signed in, navigate directly to HomePageActivity
-            if (currentUser.getEmail().trim().equalsIgnoreCase("mici9578@gmail.com")) {
-                Intent intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
-                startActivity(intent);
-                finish();
-            } else {
-                Intent intent = new Intent(MainActivity.this, HomePageActivity.class);
-                startActivity(intent);
-                finish(); // Finish the current activity to avoid returning to it
-                return;
-            }
-        }
-
-        // Navigate to LoginActivity when the Login button is clicked
-        loginButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-        });
-
-        // Navigate to SignUpActivity when the Sign Up button is clicked
-        signUpButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SignUpActivity.class);
-            startActivity(intent);
-        });
-
-        // Google Sign-In button click listener
-        googleSignInButton.setOnClickListener(v -> signInWithGoogle());
-        //Initialise Facebook SDK
-        FacebookSdk.sdkInitialize(MainActivity.this);
-
-        // Initialize Facebook Login button
-        mCallbackManager = CallbackManager.Factory.create();
-        LoginButton loginButton = findViewById(R.id.facebook_login_button);
-        loginButton.setReadPermissions("email", "public_profile");
-        loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                Log.d(TAG, "facebook:onSuccess:" + loginResult);
-                handleFacebookAccessToken(loginResult.getAccessToken());
-            }
-
-            @Override
-            public void onCancel() {
-                Log.d(TAG, "facebook:onCancel");
-            }
-
-            @Override
-            public void onError(FacebookException error) {
-                Log.d(TAG, "facebook:onError", error);
-            }
-        });
+        loadPosts();
     }
 
-    // Start the Google Sign-In process
-    private void signInWithGoogle() {
-        Intent signInIntent = googleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+    private void loadPosts() {
+        db.collection("posts")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    postList.clear();
+                    postList.addAll(queryDocumentSnapshots.toObjects(Post.class));
+                    postsAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show());
     }
 
-    // Handle the result of the Google Sign-In process
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Pass the activity result back to the Facebook SDK
-        mCallbackManager.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                // Retrieve the Google account
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                if (account != null) {
-                    // Authenticate with Firebase using the Google account
-                    firebaseAuthWithGoogle(account);
-                }
-            } catch (ApiException e) {
-                Log.w(TAG, "Google sign in failed", e);
-                Toast.makeText(MainActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
-            }
-        }
+    // Michael, 14/01/2025, START $$$$$$$$$$$$$$$$$$$$$$
+    private void deletePost(Post post) {
+        db.collection("posts")
+                .document(post.getId()) // מחיקת המסמך לפי מזהה ייחודי
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Post deleted successfully", Toast.LENGTH_SHORT).show();
+                    loadPosts();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete post", Toast.LENGTH_SHORT).show());
     }
 
-    // Authenticate with Firebase using the Google account credentials
-    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        user = firebaseAuth.getCurrentUser();
-                        Toast.makeText(MainActivity.this, "Welcome " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
-                        // Navigate to HomePageActivity after successful sign-in
-                        Intent intent = new Intent(MainActivity.this, HomePageActivity.class);
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(MainActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+    // הוספת פונקציה לעריכת פוסט
+    private void editPost(Post post) {   // (this changed just on 8/1/2025)
+        Intent intent = new Intent(this, ShareYourFoodActivity.class);
+        intent.putExtra("POST_TO_EDIT", post);
+        startActivity(intent);
     }
-
-    private void handleFacebookAccessToken(AccessToken token) {
-        Log.d(TAG, "handleFacebookAccessToken:" + token);
-
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = firebaseAuth.getCurrentUser();
-                            updateUI(user);
-                        } else {
-                            // If sign in fails, display a message to the user.
-
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            updateUI(null);
-                        }
-                    }
-                });
-    }
-
-    private void updateUI(FirebaseUser user) {
-        if(user!=null){
-            Intent intent= new Intent(MainActivity.this, HomePageActivity.class);
-            startActivity(intent);
-            finish();
-        }else{
-            Toast.makeText(this, "Please sign to continue", Toast.LENGTH_SHORT).show();
-        }
-    }
-}
+// Michael, 14/01/2025, END ########################
+} // +2
