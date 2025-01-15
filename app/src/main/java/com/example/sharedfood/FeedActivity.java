@@ -105,7 +105,7 @@ public class FeedActivity extends AppCompatActivity {
                                 post.setCity(document.getString("city"));
 
                                 // סינון לפי עיר
-                                if (!city.isEmpty() && !city.equalsIgnoreCase(post.getCity())) {
+                                if (!city.isEmpty() && (post.getCity() == null || !post.getCity().toLowerCase().contains(city.toLowerCase()))) {
                                     continue;
                                 }
 
