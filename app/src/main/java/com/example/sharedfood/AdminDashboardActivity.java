@@ -13,7 +13,7 @@ import java.util.List;
 public class AdminDashboardActivity extends AppCompatActivity {
 
     private RecyclerView postsRecyclerView;
-    private AdminPostsAdapter postsAdapter;
+    private MyPostsAdapter postsAdapter; // replace: AdminPostAdapter -> MyPostsAdapter
     private List<Post> postList;
     private FirebaseFirestore db;
 
@@ -28,7 +28,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
 // Michael, 8/01/2025, START ########################
 // קיים כבר: יצירת רשימת פוסטים ואדפטר
         postList = new ArrayList<>();
-        postsAdapter = new AdminPostsAdapter(postList, this::deletePost, this::editPost); // הוספת האופציה לעריכה
+        postsAdapter = new MyPostsAdapter(postList, this::deletePost, this::editPost); // הוספת האופציה לעריכה  // replace: AdminPostAdapter -> MyPostsAdapter
         postsRecyclerView.setAdapter(postsAdapter);
 // Michael, 8/01/2025, END ########################
 
@@ -48,8 +48,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show());
     }
 
-    private void deletePost(String postId) {
-        db.collection("posts").document(postId)
+    // Michael, 14/01/2025, START $$$$$$$$$$$$$$$$$$$$$$
+    private void deletePost(Post post) {
+        db.collection("posts")
+                .document(post.getId()) // מחיקת המסמך לפי מזהה ייחודי
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Post deleted successfully", Toast.LENGTH_SHORT).show();
@@ -57,12 +59,12 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete post", Toast.LENGTH_SHORT).show());
     }
-    // Michael, 8/01/2025, START $$$$$$$$$$$$$$$$$$$$$$
+
     // הוספת פונקציה לעריכת פוסט
-    private void editPost(Post post) {
+    private void editPost(Post post) {   // (this changed just on 8/1/2025)
         Intent intent = new Intent(this, ShareYourFoodActivity.class);
         intent.putExtra("POST_TO_EDIT", post);
         startActivity(intent);
     }
-// Michael, 8/01/2025, END ########################
+// Michael, 14/01/2025, END ########################
 } // +2
