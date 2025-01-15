@@ -10,13 +10,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- פילטרים -->
+        <!-- שדה חיפוש להזנת עיר -->
+        <EditText
+            android:id="@+id/cityInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="הקלד את שם העיר"
+            android:padding="8dp"
+            android:layout_margin="8dp"
+            android:inputType="text"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- HorizontalScrollView לפילטרים -->
         <HorizontalScrollView
             android:id="@+id/horizontalScrollView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cityInput"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -90,18 +103,6 @@
             </LinearLayout>
         </HorizontalScrollView>
 
-
-        <!-- כפתור פילטרים -->
-        <Button
-            android:id="@+id/filterButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Apply Filters"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/horizontalScrollView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
         <!-- טקסט אם אין פוסטים -->
         <TextView
             android:id="@+id/emptyStateText"
@@ -111,8 +112,7 @@
             android:textColor="@color/green_color_dark"
             android:visibility="gone"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/filterButton"
-            app:layout_constraintBottom_toTopOf="@id/postsRecyclerView"
+            app:layout_constraintTop_toBottomOf="@id/horizontalScrollView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -122,11 +122,10 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/filterButton"
+            app:layout_constraintTop_toBottomOf="@id/emptyStateText"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
