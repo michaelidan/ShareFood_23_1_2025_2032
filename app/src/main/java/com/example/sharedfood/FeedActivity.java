@@ -7,7 +7,9 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,6 +26,7 @@ public class FeedActivity extends AppCompatActivity {
     private PostAdapter adapter;
     private FirebaseFirestore db;
     private TextView emptyStateText;
+    private EditText cityInput;
     private List<Post> postsList;
 
     // פילטרים
@@ -43,6 +46,7 @@ public class FeedActivity extends AppCompatActivity {
         // Initialize views
         recyclerView = findViewById(R.id.postsRecyclerView);
         emptyStateText = findViewById(R.id.emptyStateText);
+        cityInput = findViewById(R.id.cityInput);
         postsList = new ArrayList<>();
 
         // Initialize filters
@@ -58,10 +62,11 @@ public class FeedActivity extends AppCompatActivity {
 
         setupRecyclerView();
 
-        // הוספת מאזינים לפילטרים
+        // Add listeners to filters and city input
         setupFilterListeners();
+        setupCityInputListener();
 
-        loadPosts();
+        loadPosts(""); // Load all posts initially
     }
 
     private void setupRecyclerView() {
@@ -70,7 +75,15 @@ public class FeedActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    private void loadPosts() {
+    private void setupCityInputListener() {
+        cityInput.setOnEditorActionListener((v, actionId, event) -> {
+            String city = cityInput.getText().toString().trim();
+            loadPosts(city);
+            return true;
+        });
+    }
+
+    private void loadPosts(String city) {
         db.collection("posts")
                 .get()
                 .addOnCompleteListener(task -> {
@@ -90,6 +103,11 @@ public class FeedActivity extends AppCompatActivity {
 
                                 post.setFilters((List<String>) document.get("filters"));
                                 post.setCity(document.getString("city"));
+
+                                // סינון לפי עיר
+                                if (!city.isEmpty() && !city.equalsIgnoreCase(post.getCity())) {
+                                    continue;
+                                }
 
                                 if (isPostMatchingFilters(post)) {
                                     postsList.add(post);
@@ -115,7 +133,7 @@ public class FeedActivity extends AppCompatActivity {
         };
 
         for (CheckBox checkBox : checkBoxes) {
-            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> loadPosts());
+            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> loadPosts(cityInput.getText().toString().trim()));
         }
     }
 
