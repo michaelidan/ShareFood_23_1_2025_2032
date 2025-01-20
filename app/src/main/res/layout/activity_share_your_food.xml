@@ -139,10 +139,19 @@
                         android:layout_marginBottom="8dp" />
 
                     <CheckBox
+                        android:id="@+id/extraKosherCheckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="כשר למהדרין"
+                        android:textColor="#1B5E20"
+                        android:layout_marginBottom="8dp" />
+
+
+                    <CheckBox
                         android:id="@+id/hotCheckBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="אוכל חם"
+                        android:text="אוכל חם/ מבושל"
                         android:textColor="#1B5E20"
                         android:layout_marginBottom="8dp" />
 
@@ -150,7 +159,15 @@
                         android:id="@+id/coldCheckBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="אוכל קר/ קפוא"
+                        android:text="אוכל קר (מאוחסן במקרר)"
+                        android:textColor="#1B5E20"
+                        android:layout_marginBottom="8dp" />
+
+                    <CheckBox
+                        android:id="@+id/frizerCheckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="אוכל קפוא (מאוחסן במקפיא)"
                         android:textColor="#1B5E20"
                         android:layout_marginBottom="8dp" />
 
@@ -159,6 +176,22 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="אוכל סגור/ יבש"
+                        android:textColor="#1B5E20"
+                        android:layout_marginBottom="8dp" />
+
+                    <CheckBox
+                        android:id="@+id/pastriesCheckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="מאפים"
+                        android:textColor="#1B5E20"
+                        android:layout_marginBottom="8dp" />
+
+                    <CheckBox
+                        android:id="@+id/vegetablesCheckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="פירות וירקות"
                         android:textColor="#1B5E20"
                         android:layout_marginBottom="8dp" />
 
