@@ -68,7 +68,7 @@ public class ShareYourFoodActivity extends AppCompatActivity {
     List<String> selectedFilters = new ArrayList<>();
     Post post;
     private EditText cityEditText;
-    CheckBox kosherCheckBox,veganCheckBox, vegetarianCheckBox, glutenFreeCheckBox, hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
+    CheckBox extraKosherCheckBox, frizerCheckBox, pastriesCheckBox, vegetablesCheckBox, kosherCheckBox,veganCheckBox, vegetarianCheckBox, glutenFreeCheckBox, hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
 
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -116,6 +116,11 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         veganCheckBox = findViewById(R.id.veganCheckBox);
         vegetarianCheckBox = findViewById(R.id.vegetarianCheckBox);
         glutenFreeCheckBox = findViewById(R.id.glutenFreeCheckBox);
+
+        extraKosherCheckBox = findViewById(R.id.extraKosherCheckBox);
+        frizerCheckBox = findViewById(R.id.frizerCheckBox);
+        pastriesCheckBox = findViewById(R.id.pastriesCheckBox);
+        vegetablesCheckBox = findViewById(R.id.vegetablesCheckBox);
         // Initialize views
         foodDescriptionEditText = findViewById(R.id.foodDescriptionEditText);
         uploadPostButton  = findViewById(R.id.uploadPostButton );
@@ -192,6 +197,12 @@ public class ShareYourFoodActivity extends AppCompatActivity {
         if (veganCheckBox.isChecked()) selectedFilters.add("vegan");
         if (vegetarianCheckBox.isChecked()) selectedFilters.add("vegetarian");
         if (glutenFreeCheckBox.isChecked()) selectedFilters.add("glutenFree");
+
+        if (extraKosherCheckBox.isChecked()) selectedFilters.add("extraKosher");
+        if (frizerCheckBox.isChecked()) selectedFilters.add("frizer");
+        if (pastriesCheckBox.isChecked()) selectedFilters.add("pastries");
+        if (vegetablesCheckBox.isChecked()) selectedFilters.add("vegetables&fruits");
+
         post.setFilters(selectedFilters);
     }
 
