@@ -31,6 +31,9 @@ import com.google.android.gms.common.SignInButton;
 import com.facebook.FacebookSdk;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button loginButton, signUpButton;
@@ -43,7 +46,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 100;
     private static final String TAG = "MainActivity";
-
+    // Michael - Check if the user is an admin - START, 23/01/2025 - SSSSSSSSSSSSSSSSSSSSSSSSSSS
+    public static boolean isAdmin(FirebaseUser user) {
+        // PUT HERE THE EMAILS OF THE ADMINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        List<String> adminEmails = Arrays.asList("admin@example.com", "mici9578@gmail.com");
+        return user != null && user.getEmail() != null && adminEmails.contains(user.getEmail().trim());
+    }
+    // Michael - Check if the user is an admin - END, 23/01/2025 - EEEEEEEEEEEEEEEEEEEEEEEEEEEE
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         if (currentUser != null) {
             // If the user is already signed in, navigate directly to HomePageActivity
             if (currentUser.getEmail().trim().equalsIgnoreCase("mici9578@gmail.com")) {
-                Intent intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
+                Intent intent = new Intent(MainActivity.this, HomePageActivity.class);
                 startActivity(intent);
                 finish();
             } else {

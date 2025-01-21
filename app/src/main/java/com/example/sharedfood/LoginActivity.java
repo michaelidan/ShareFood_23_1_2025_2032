@@ -10,78 +10,79 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-// my import addition to check if the user is an admin, michael %%%
+// ייבוא נוסף לבדיקה אם המשתמש הוא מנהל, michael %%%
 import java.util.List;
 import java.util.Arrays;
-// end of my import addition, michael %%%
+// סוף הייבוא הנוסף, michael %%%
 
 public class LoginActivity extends AppCompatActivity {
 
+    // משתנה לניהול אימות משתמשים באמצעות Firebase
     private FirebaseAuth mAuth;
+
+    // שדות לעריכת טקסט עבור אימייל וסיסמה
     private EditText emailEditText, passwordEditText;
+
+    // כפתור התחברות
     private Button loginButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // הגדרת עיצוב המסך עבור הפעילות
         setContentView(R.layout.activity_login);
 
+        // אתחול Firebase Authentication
         mAuth = FirebaseAuth.getInstance();
+
+        // חיבור משתני התצוגה לשדות בערכת ה-XML
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
 
+        // הגדרת מאזין לאירוע לחיצה על כפתור ההתחברות
         loginButton.setOnClickListener(v -> {
+            // קבלת הטקסט מהשדות והסרת רווחים מיותרים
             String email = emailEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
 
+            // בדיקה אם השדות ריקים
             if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
                 Toast.makeText(LoginActivity.this, "Please enter email and password", Toast.LENGTH_SHORT).show();
-                return;
+                return; // יציאה מהפונקציה אם השדות ריקים
             }
 
+            // ניסיון להתחבר באמצעות Firebase עם אימייל וסיסמה
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, task -> {
                         if (task.isSuccessful()) {
+                            // התחברות הצליחה
                             FirebaseUser user = mAuth.getCurrentUser();
 
-                            // my addition to check if the user is an admin, michael %%%
-                            checkIfUserIsAdmin(user); // בדיקה אם המשתמש הוא מנהל
-                            // end of my addition, michael %%%
-                            // HERE PUT LIST OF ADMINS EMAILS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                            if (user != null && user.getEmail() != null) {
-                                List<String> adminEmails = Arrays.asList("mici9578@gmail.com", "admin@example.com", "secondAdmin@example.com");
-                                if (adminEmails.contains(user.getEmail().trim())) {
-                                    Toast.makeText(LoginActivity.this, "ברוך הבא, מנהל!", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                } else {
-                                    Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                }
-                            }
+                            // בדיקה אם המשתמש הוא מנהל
+                            checkIfUserIsAdmin(user); // michael %%%
                         } else {
+                            // התחברות נכשלה, הצגת הודעת שגיאה
                             Toast.makeText(LoginActivity.this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
         });
     }
 
-    // my addition - added the checkIfUserIsAdmin function, michael %%%
+    // Michael, START, 23/11/2023
+    //שליחת המשתמש לדף הבית, ואם הוא אדמין אז גם תציג הודעת ברוך הבא
     private void checkIfUserIsAdmin(FirebaseUser user) {
-        List<String> adminEmails = Arrays.asList("admin@example.com", "secondAdmin@example.com");
-        if (user != null && user.getEmail() != null && adminEmails.contains(user.getEmail().trim())) {
-            Toast.makeText(LoginActivity.this, "ברוך הבא, מנהל!", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
-            startActivity(intent);
-            finish();
+        // רשימה של אימיילים של מנהלים
+       if (MainActivity.isAdmin(user)){
+            // אם המשתמש הוא מנהל, הצגת הודעה
+            Toast.makeText(LoginActivity.this, "ברוך הבא, אדון מנהל!", Toast.LENGTH_SHORT).show();
         }
+        // ניווט למסך הבית
+        Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
+        startActivity(intent);
+        finish();
     }
-    // end of my addition - added the checkIfUserIsAdmin function, michael %%%
+
+    // סוף הפונקציה לבדיקה אם המשתמש הוא מנהל, michael %%%
 }

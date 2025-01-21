@@ -1,75 +1,112 @@
+
 package com.example.sharedfood;
 
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
 
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
 import androidx.core.app.NotificationCompat;
+
 import androidx.core.app.NotificationManagerCompat;
 
+import androidx.activity.result.contract.ActivityResultContracts;
+
+import androidx.activity.result.ActivityResultCallback;
+
+import android.content.pm.PackageManager;
+
+
+import android.content.Intent;
+
+import android.os.Bundle;
+
+import android.util.Log;
+
+import android.widget.Toast;
+
+
+
+import androidx.appcompat.app.AppCompatActivity;
+
+
+
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+
 import com.google.firebase.auth.FirebaseAuth;
+
+import com.google.firebase.auth.FirebaseUser;
+
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+
+
+import java.util.Arrays;
 
 import java.util.List;
 
+
 public class HomePageActivity extends AppCompatActivity {
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
+    private FirebaseAuth mAuth; // משתנה לאחסון הפניה ל-Firebase Auth
+    private FirebaseFirestore db; // משתנה לאחסון הפניה ל-Firebase Firestore
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
 
-        // Initialize Firebase Auth
+        // אתחול של Firebase Auth
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        // בדיקה ומחיקת פוסטים שפג תוקפם
         checkAndDeleteExpiredPosts();
 
-        // Share Food Button
+        // כפתור "שתף אוכל"
         findViewById(R.id.shareFoodButton).setOnClickListener(v -> {
-            if (checkUserLogin()) {
+            if (checkUserLogin()) { // בדיקת האם המשתמש מחובר
                 startActivity(new Intent(HomePageActivity.this, ShareYourFoodActivity.class));
             }
         });
 
-        // Contact Us Button
+        // כפתור "צור קשר"
         findViewById(R.id.contactUsButton).setOnClickListener(v -> {
-            startActivity(new Intent(HomePageActivity.this, activity_contact_us.class));
-        });
 
-        // Personal Area Button
+            FirebaseUser user = mAuth.getCurrentUser();
+        // Michael, 23/01/2025, START
+            if (MainActivity.isAdmin(user)){
+                // משתמש הוא מנהל
+                startActivity(new Intent(HomePageActivity.this, AdminContactUsActivity.class));
+            } else {
+                // משתמש רגיל
+                startActivity(new Intent(HomePageActivity.this, activity_contact_us.class));
+            }
+        });
+        // Michael, 23/01/2025, END
+
+        // כפתור "אזור אישי"
         findViewById(R.id.personalAreaButton).setOnClickListener(v -> {
-            if (checkUserLogin()) {
+            if (checkUserLogin()) { // בדיקת האם המשתמש מחובר
                 startActivity(new Intent(HomePageActivity.this, PersonalAreaActivity.class));
             }
         });
 
-        // Feed Button
+        // כפתור "פיד"
         findViewById(R.id.feedButton).setOnClickListener(v -> {
-            startActivity(new Intent(HomePageActivity.this, FeedActivity.class));
+            startActivity(new Intent(HomePageActivity.this, FeedActivity.class)); // מעבר למסך "פיד"
         });
 
-        // My Posts Button
+        // כפתור "הפוסטים שלי"
         findViewById(R.id.myPostsButton).setOnClickListener(v -> {
-            if (checkUserLogin()) {
+            if (checkUserLogin()) { // בדיקת האם המשתמש מחובר
                 startActivity(new Intent(HomePageActivity.this, MyPostsActivity.class));
             }
         });
 
-        // FAB Share Button
+        // כפתור FAB לשיתוף אוכל
         ExtendedFloatingActionButton fabShare = findViewById(R.id.fabShare);
         fabShare.setOnClickListener(v -> {
-            if (checkUserLogin()) {
+            if (checkUserLogin()) { // בדיקת האם המשתמש מחובר
                 startActivity(new Intent(HomePageActivity.this, ShareYourFoodActivity.class));
             }
         });
@@ -80,12 +117,12 @@ public class HomePageActivity extends AppCompatActivity {
         db.collection("posts").get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
-                    Long timestamp = document.getLong("timestamp");
+                    Long timestamp = document.getLong("timestamp"); // קבלת זמן היצירה של הפוסט
                     if (timestamp != null) {
-                        // חשבי את זמן התפוגה על פי הפילטרים
+                        // חישוב זמן תפוגה על בסיס הפילטרים של הפוסט
                         Long expirationTime = calculateExpirationTime(document);
                         if (System.currentTimeMillis() > expirationTime) {
-                            // אם הפוסט פג תוקף - מחיקת הפוסט
+                            // מחיקת פוסט אם פג תוקף
                             db.collection("posts").document(document.getId())
                                     .delete()
                                     .addOnSuccessListener(aVoid -> {
@@ -98,19 +135,19 @@ public class HomePageActivity extends AppCompatActivity {
                     }
                 }
             } else {
-                Log.e("Firebase", "Error getting posts: ", task.getException());
+                Log.e("Firebase", "Error getting posts: ", task.getException()); // טיפול במקרה של שגיאה בשליפת פוסטים
             }
         });
     }
 
     private Long calculateExpirationTime(QueryDocumentSnapshot document) {
-        Long timestamp = document.getLong("timestamp");
-        if (timestamp == null) return Long.MAX_VALUE; // ללא Timestamp הפוסט לא ימחק
+        Long timestamp = document.getLong("timestamp"); // זמן היצירה של הפוסט
+        if (timestamp == null) return Long.MAX_VALUE; // אם אין זמן יצירה, לא למחוק את הפוסט
 
-        List<String> filters = (List<String>) document.get("filters");
-        long expirationMillis = 0;
+        List<String> filters = (List<String>) document.get("filters"); // קבלת הפילטרים של הפוסט
+        long expirationMillis = 0; // משתנה לשמירת זמן התפוגה
 
-        // אם הפוסט מכיל את הפילטרים "חם" או "קר", נחשב את זמן התפוגה
+        // בדיקת קיומם של פילטרים "חם" או "קר" והגדרת זמן תפוגה מתאים
         if (filters != null && !filters.isEmpty()) {
             if (filters.contains("Hot")) {
                 expirationMillis = Math.max(expirationMillis, 12 * 60 * 60 * 1000); // 12 שעות
@@ -120,19 +157,19 @@ public class HomePageActivity extends AppCompatActivity {
             }
         }
 
-        // אם אין פילטרים "חם" או "קר", הפוסט לא יימחק
+        // אם אין פילטרים, זמן התפוגה אינסופי
         if (expirationMillis == 0) {
-            return Long.MAX_VALUE; // זמן תפוגה אינסופי כדי למנוע מחיקה
+            return Long.MAX_VALUE;
         }
-        return timestamp + expirationMillis; // זמן התפוגה מחושב
+        return timestamp + expirationMillis; // חישוב זמן התפוגה הסופי
     }
 
     private boolean checkUserLogin() {
-        if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(this, "נא להתחבר תחילה", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(HomePageActivity.this, LoginActivity.class));
+        if (mAuth.getCurrentUser() == null) { // בדיקה אם המשתמש מחובר
+            Toast.makeText(this, "נא להתחבר תחילה", Toast.LENGTH_SHORT).show(); // הצגת הודעה למשתמש
+            startActivity(new Intent(HomePageActivity.this, LoginActivity.class)); // מעבר למסך התחברות
             return false;
         }
-        return true;
+        return true; // המשתמש מחובר
     }
 }

@@ -12,59 +12,72 @@ import java.util.List;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 
+    // רכיב RecyclerView להצגת רשימת הפוסטים
     private RecyclerView postsRecyclerView;
-    private MyPostsAdapter postsAdapter; // replace: AdminPostAdapter -> MyPostsAdapter
+    // אדפטר מותאם אישית להצגת הפוסטים וניהול פעולות כמו מחיקה ועריכה
+    private MyPostsAdapter postsAdapter;
+    // רשימה המכילה את הפוסטים שנמשכים מהמסד נתונים
     private List<Post> postList;
+    // משתנה לניהול חיבור למסד הנתונים של Firebase Firestore
     private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_dashboard);
+        setContentView(R.layout.activity_admin_dashboard); // קביעת תצוגת המסך לפי קובץ XML
 
+        // אתחול ה-RecyclerView והגדרת פריסת הפריטים בתצוגה אנכית
         postsRecyclerView = findViewById(R.id.postsRecyclerView);
         postsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-// Michael, 8/01/2025, START ########################
-// קיים כבר: יצירת רשימת פוסטים ואדפטר
+        // אתחול רשימת הפוסטים הריקה והגדרת האדפטר
         postList = new ArrayList<>();
-        postsAdapter = new MyPostsAdapter(postList, this::deletePost, this::editPost); // הוספת האופציה לעריכה  // replace: AdminPostAdapter -> MyPostsAdapter
+        postsAdapter = new MyPostsAdapter(postList, this::deletePost, this::editPost);
         postsRecyclerView.setAdapter(postsAdapter);
-// Michael, 8/01/2025, END ########################
 
+        // אתחול החיבור למסד נתונים של Firebase Firestore
         db = FirebaseFirestore.getInstance();
 
+        // קריאה לפונקציה לטעינת הפוסטים מהמסד נתונים
         loadPosts();
     }
 
+    // פונקציה לטעינת הפוסטים מהמסד נתונים
     private void loadPosts() {
-        db.collection("posts")
-                .get()
+        db.collection("posts") // גישה לאוסף "posts" במסד הנתונים
+                .get() // קבלת כל המסמכים באוסף
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    postList.clear();
-                    postList.addAll(queryDocumentSnapshots.toObjects(Post.class));
-                    postsAdapter.notifyDataSetChanged();
+                    postList.clear(); // ניקוי הרשימה הקיימת
+                    postList.addAll(queryDocumentSnapshots.toObjects(Post.class)); // המרת המסמכים לאובייקטים מסוג Post
+                    postsAdapter.notifyDataSetChanged(); // עדכון התצוגה בנתונים החדשים
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show()); // טיפול במקרה של כשל בטעינה
     }
 
-    // Michael, 14/01/2025, START $$$$$$$$$$$$$$$$$$$$$$
+    // פונקציה למחיקת פוסט מסוים מהמסד נתונים
     private void deletePost(Post post) {
         db.collection("posts")
-                .document(post.getId()) // מחיקת המסמך לפי מזהה ייחודי
-                .delete()
+                .document(post.getId()) // גישה למסמך לפי מזהה ייחודי
+                .delete() // מחיקת המסמך
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Post deleted successfully", Toast.LENGTH_SHORT).show();
-                    loadPosts();
+                    Toast.makeText(this, "Post deleted successfully", Toast.LENGTH_SHORT).show(); // הצגת הודעת הצלחה
+                    loadPosts(); // טעינה מחדש של הפוסטים לאחר מחיקה
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete post", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to delete post", Toast.LENGTH_SHORT).show()); // טיפול במקרה של כשל במחיקה
     }
 
-    // הוספת פונקציה לעריכת פוסט
-    private void editPost(Post post) {   // (this changed just on 8/1/2025)
-        Intent intent = new Intent(this, ShareYourFoodActivity.class);
-        intent.putExtra("POST_TO_EDIT", post);
-        startActivity(intent);
+    // פונקציה לעריכת פוסט מסוים
+    private void editPost(Post post) {
+        Intent intent = new Intent(this, ShareYourFoodActivity.class); // יצירת Intent למעבר לפעילות עריכה
+        intent.putExtra("POST_TO_EDIT", post); // העברת נתוני הפוסט לעריכה
+        startActivity(intent); // הפעלת הפעילות לעריכה
     }
-// Michael, 14/01/2025, END ########################
-} // +2
+}
+
+// הסבר כללי:
+// קובץ זה מגדיר את פעילות מנהל המערכת של האפליקציה ShareFood.
+// הפעילות כוללת הצגת רשימת פוסטים שנמשכים ממסד הנתונים Firebase Firestore.
+// מנהל המערכת יכול למחוק פוסטים קיימים או לערוך אותם באמצעות פונקציות מותאמות אישית.
+// התצוגה מנוהלת על ידי RecyclerView ואדפטר מותאם אישית לניהול פעולות על הפוסטים.
