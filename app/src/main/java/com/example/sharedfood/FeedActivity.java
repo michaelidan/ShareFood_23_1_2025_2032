@@ -29,7 +29,7 @@ public class FeedActivity extends AppCompatActivity {
     private EditText cityInput;
     private List<Post> postsList;
 
-    // פילטרים
+    // Filters CheckBoxes
     private CheckBox kosherCheckBox, veganCheckBox, vegetarianCheckBox, glutenFreeCheckBox,
             hotCheckBox, coldCheckBox, closedCheckBox, dairyCheckBox, meatCheckBox;
 
@@ -66,15 +66,22 @@ public class FeedActivity extends AppCompatActivity {
         setupFilterListeners();
         setupCityInputListener();
 
-        loadPosts(""); // Load all posts initially
+        // Load all posts initially
+        loadPosts("");
     }
 
+    /**
+     * Sets up the RecyclerView with a LinearLayoutManager and adapter.
+     */
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new PostAdapter(postsList);
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * Listens for user input in the city search field and updates the post list.
+     */
     private void setupCityInputListener() {
         cityInput.setOnEditorActionListener((v, actionId, event) -> {
             String city = cityInput.getText().toString().trim();
@@ -83,6 +90,11 @@ public class FeedActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Fetches posts from Firestore and applies city and filter-based filtering.
+     *
+     * @param city the city to filter posts by
+     */
     private void loadPosts(String city) {
         db.collection("posts")
                 .get()
@@ -94,7 +106,7 @@ public class FeedActivity extends AppCompatActivity {
                                 Post post = new Post();
                                 post.setDescription(document.getString("description"));
 
-                                // שחזור תמונה
+                                // Decode image from Base64
                                 String base64Image = document.getString("imageBase64");
                                 if (base64Image != null) {
                                     Bitmap bitmap = decodeBase64ToBitmap(base64Image);
@@ -104,16 +116,17 @@ public class FeedActivity extends AppCompatActivity {
                                 post.setFilters((List<String>) document.get("filters"));
                                 post.setCity(document.getString("city"));
 
-                                // סינון לפי עיר
+                                // Filter by city
                                 if (!city.isEmpty() && (post.getCity() == null || !post.getCity().toLowerCase().contains(city.toLowerCase()))) {
                                     continue;
                                 }
 
+                                // Check if the post matches selected filters
                                 if (isPostMatchingFilters(post)) {
                                     postsList.add(post);
                                 }
                             } catch (Exception e) {
-                                Log.e(TAG, "Error parsing document: " + e.getMessage());
+                                Log.e(TAG, "Error parsing document: " + e.getMessage(), e);
                             }
                         }
 
@@ -121,10 +134,14 @@ public class FeedActivity extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
                     } else {
                         Log.w(TAG, "Error getting documents.", task.getException());
+                        Toast.makeText(this, "Failed to load posts. Please try again.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
+    /**
+     * Adds listeners to all filter checkboxes to reload posts when toggled.
+     */
     private void setupFilterListeners() {
         CheckBox[] checkBoxes = {
                 kosherCheckBox, veganCheckBox, vegetarianCheckBox,
@@ -137,6 +154,12 @@ public class FeedActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Checks if a post matches the selected filters.
+     *
+     * @param post the post to check
+     * @return true if the post matches all selected filters
+     */
     private boolean isPostMatchingFilters(Post post) {
         if (kosherCheckBox.isChecked() && !post.hasFilter("Kosher")) return false;
         if (veganCheckBox.isChecked() && !post.hasFilter("vegan")) return false;
@@ -151,6 +174,9 @@ public class FeedActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Updates the UI to show or hide the empty state message.
+     */
     private void updateEmptyState() {
         if (postsList.isEmpty()) {
             emptyStateText.setVisibility(View.VISIBLE);
@@ -161,12 +187,18 @@ public class FeedActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Decodes a Base64 string to a Bitmap image.
+     *
+     * @param base64String the Base64 encoded string
+     * @return the decoded Bitmap, or null if decoding fails
+     */
     private Bitmap decodeBase64ToBitmap(String base64String) {
         try {
             byte[] decodedBytes = Base64.decode(base64String, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Failed to decode Base64 string to Bitmap: " + e.getMessage(), e);
             return null;
         }
     }
