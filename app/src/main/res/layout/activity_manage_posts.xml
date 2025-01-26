@@ -8,16 +8,17 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="פעולות מנהלים"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <!-- כפתור לניהול פוסטים -->
-    <Button
-        android:id="@+id/managePostsButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:text="ניהול פוסטים"
-        android:layout_marginTop="16dp" />
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="16dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/postsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp" />
 
 </LinearLayout>

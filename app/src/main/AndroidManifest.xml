@@ -37,6 +37,9 @@
             android:name=".AdminActionsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ManagePostsActivity"
+            android:exported="true" />
         <!-- Michael, 26/01/2025 END -->
 
         <!-- Main activity -->
@@ -64,9 +67,6 @@
             android:exported="true" />
         <activity
             android:name=".LoginActivity"
-            android:exported="true" />
-        <activity
-            android:name=".AdminDashboardActivity"
             android:exported="true" />
 
         <activity
