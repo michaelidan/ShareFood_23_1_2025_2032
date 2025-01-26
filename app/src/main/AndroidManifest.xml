@@ -28,6 +28,17 @@
         <activity
             android:name=".activity_contact_us"
             android:exported="false" />
+        <!-- Michael, 26/01/2025 START -->
+        <activity
+            android:name=".AdminContactUsActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".AdminActionsActivity"
+            android:exported="false" />
+
+        <!-- Michael, 26/01/2025 END -->
+
         <!-- Main activity -->
         <activity
             android:name=".MainActivity"
