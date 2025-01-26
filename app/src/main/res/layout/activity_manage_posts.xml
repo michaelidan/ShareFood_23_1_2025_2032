@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- כותרת הדף -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -14,6 +15,19 @@
         android:layout_gravity="center"
         android:paddingBottom="16dp" />
 
+    <!-- טקסט למצב שאין פוסטים -->
+    <TextView
+        android:id="@+id/emptyStateText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="אין פוסטים להצגה"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textColor="#FF0000" />
+
+    <!-- RecyclerView להצגת הפוסטים -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/postsRecyclerView"
         android:layout_width="match_parent"
